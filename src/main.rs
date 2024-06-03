@@ -9,5 +9,7 @@ fn main() -> std::io::Result<()> {
     //let mut file = File::open("testfiles/notwav.wav")?;
     let wav = wave::Wave::from_wav_file(file);
     println!("{:?}", wav);
+    let mut file2 = File::create("testfiles/file_example_out.wav")?;
+    wav.to_wav_file(file2);
     Ok(())
 }

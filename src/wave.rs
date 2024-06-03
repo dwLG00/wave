@@ -2,6 +2,7 @@ use std::fs::File;
 use std::io::BufReader;
 use std::io::BufRead;
 use std::io::Read;
+use std::io::Write;
 use std::fmt;
 
 #[derive(Clone)]
@@ -50,7 +51,7 @@ impl Wave {
         buf_reader.read(&mut u32_buffer);
         assert!(b2u32(u32_buffer, Endian::Big) == 0x666D7420);
 
-        // Bytes 17-20: Chunk size - 8 bytes
+        // Bytes 17-20: Chunk size - 8 bytes. In this case 16.
         buf_reader.read(&mut u32_buffer);
         let block_size = b2u32(u32_buffer, Endian::Little) + 8;
 
@@ -120,6 +121,45 @@ impl Wave {
         }
 
         Wave { channel_left: left_channel, channel_right: right_channel, sample_rate: sample_rate }
+    }
+
+    pub fn to_wav_file(&self, mut file: File) {
+        // Writes the contents of wave struct to a wav file
+
+        // Assemble all relevant constants
+        let audio_format: u16 = 1; // PCM
+        let n_channels: u16 = 2; // Stereo
+        let sample_rate = self.sample_rate;
+        let bits_per_sample: u16 = 16;
+        let bytes_per_bloc = n_channels * bits_per_sample / 8;
+        let bytes_per_sec: u32 = (bytes_per_bloc as u32) * sample_rate;
+        let chunk_size: u32 = (self.channel_left.len() as u32) * 4; // channel_left.len() samples * 2 channels * 2 bytes per sample
+        let file_size: u32 = 36 + chunk_size;
+        let RIFF: u32 = 0x52494646;
+        let WAVE: u32 = 0x57415645;
+        let FMT: u32 = 0x666D7420;
+        let DATA: u32 = 0x64617461;
+
+        // Write stuff
+        file.write(&u32::to_be_bytes(RIFF));
+        file.write(&u32::to_le_bytes(file_size));
+        file.write(&u32::to_be_bytes(WAVE));
+
+        file.write(&u32::to_be_bytes(FMT));
+        file.write(&u32::to_le_bytes(16)); // Subchunk1 size
+        file.write(&u16::to_le_bytes(audio_format));
+        file.write(&u16::to_le_bytes(n_channels));
+        file.write(&u32::to_le_bytes(sample_rate));
+        file.write(&u32::to_le_bytes(bytes_per_sec));
+        file.write(&u16::to_le_bytes(bytes_per_bloc));
+        file.write(&u16::to_le_bytes(bits_per_sample));
+
+        file.write(&u32::to_be_bytes(DATA));
+        file.write(&u32::to_le_bytes(chunk_size));
+        for i in 0..self.channel_left.len() {
+            file.write(&i16::to_le_bytes(self.channel_left[i]));
+            file.write(&i16::to_le_bytes(self.channel_right[i]));
+        }
     }
 }
 
