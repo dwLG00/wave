@@ -1,18 +1,31 @@
 use crate::wave;
 
-pub fn compressor(audio: Vec<f64>, cutoff: f64, ratio: f64) -> Vec<f64> {
+pub fn compressor(audio: Vec<i16>, cutoff: i16, ratio: f64) -> Vec<i16> {
     // Compressor effect
 
-    let mut buffer = Vec::<f64>::new();
+    let mut buffer = Vec::<i16>::new();
     for sample in audio {
         if sample.abs() < cutoff {
             buffer.push(sample);
         } else {
-            let polarity: f64 = if sample > 0.0 { 1.0 } else { -1.0 };
+            let polarity: i16 = if sample > 0 { 1 } else { -1 };
             let amount_above = sample.abs() - cutoff;
-            let compressed_amount = polarity * (amount_above / ratio + cutoff);
+            let compressed_amount = polarity * ( ((amount_above as f64) / ratio) as i16 + cutoff);
             buffer.push(compressed_amount);
         }
+    }
+    buffer
+}
+
+pub fn delay(audio: Vec<i16>, delay_by: usize, amt: f64) -> Vec<i16> {
+    // Delay effect
+    let mut buffer = Vec::<i16>::new();
+    for i in 0..delay_by {
+        buffer.push(audio[i]);
+    }
+    for i in delay_by..audio.len() {
+        let delayed = ((audio[i - delay_by] as f64) * amt) as i16;
+        buffer.push(audio[i] + delayed);
     }
     buffer
 }

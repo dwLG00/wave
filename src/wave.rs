@@ -214,7 +214,8 @@ pub fn add_with_offset(wave1: Wave, wave2: Wave, offset: usize) -> Wave {
     Wave { channel_left: left, channel_right: right, sample_rate: wave1.sample_rate }
 }
 
-pub fn apply(wave: Wave, f: &dyn Fn(Vec<i16>) -> Vec<i16>) -> Wave {
+//pub fn apply(wave: Wave, f: &dyn Fn(Vec<i16>) -> Vec<i16>) -> Wave {
+pub fn apply(wave: Wave, f: impl Fn(Vec<i16>) -> Vec<i16>) -> Wave {
     // Applies a function to both channels of the wave
     let sample_rate = wave.sample_rate;
     let left = f(wave.channel_left);
