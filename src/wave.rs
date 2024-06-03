@@ -163,17 +163,17 @@ impl Wave {
     }
 }
 
-/*
 pub fn compose(wave1: Wave, wave2: Wave) -> Wave {
     // Horizontal sum of two waves
     assert!(wave1.channel_left.len() == wave1.channel_right.len());
     assert!(wave2.channel_left.len() == wave2.channel_right.len());
+    assert!(wave1.sample_rate == wave2.sample_rate);
 
     let mut left = wave1.channel_left.clone();
     let mut right = wave1.channel_right.clone();
     left.extend_from_slice(&wave2.channel_left);
     right.extend_from_slice(&wave2.channel_right);
-    Wave { channel_left: left, channel_right: right }
+    Wave { channel_left: left, channel_right: right, sample_rate:  wave1.sample_rate }
 }
 
 pub fn add(wave1: Wave, wave2: Wave) -> Wave {
@@ -181,6 +181,7 @@ pub fn add(wave1: Wave, wave2: Wave) -> Wave {
     assert!(wave1.channel_left.len() == wave1.channel_right.len());
     assert!(wave2.channel_left.len() == wave2.channel_right.len());
     assert!(wave1.channel_left.len() == wave2.channel_right.len());
+    assert!(wave1.sample_rate == wave2.sample_rate);
     let length = wave1.channel_left.len();
 
     let mut left = wave1.channel_left.clone();
@@ -189,7 +190,7 @@ pub fn add(wave1: Wave, wave2: Wave) -> Wave {
         left[i] += wave2.channel_left[i];
         right[i] += wave2.channel_right[i];
     }
-    Wave { channel_left: left, channel_right: right }
+    Wave { channel_left: left, channel_right: right, sample_rate: wave1.sample_rate }
 }
 
 pub fn add_with_offset(wave1: Wave, wave2: Wave, offset: usize) -> Wave {
@@ -210,16 +211,16 @@ pub fn add_with_offset(wave1: Wave, wave2: Wave, offset: usize) -> Wave {
         right[offset + i] = wave1.channel_right[offset + i] + wave2.channel_right[i];
     }
 
-    Wave { channel_left: left, channel_right: right }
+    Wave { channel_left: left, channel_right: right, sample_rate: wave1.sample_rate }
 }
 
 pub fn apply(wave: Wave, f: &dyn Fn(Vec<i16>) -> Vec<i16>) -> Wave {
     // Applies a function to both channels of the wave
+    let sample_rate = wave.sample_rate;
     let left = f(wave.channel_left);
     let right = f(wave.channel_right);
-    Wave { channel_left: left, channel_right: right }
+    Wave { channel_left: left, channel_right: right, sample_rate: sample_rate }
 }
-*/
 
 enum Endian {
     Big,
